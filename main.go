@@ -62,8 +62,12 @@ func homePage(c *gin.Context) {
 			Item{Platform: "Windows", URL: "/" + gateway + "/win/package.zip", FileName: "package.zip"},
 		}
 	}
+	if gateway == "auto" {
+		gateway = ""
+	}
 	c.HTML(http.StatusOK, "index.tpl", gin.H{
-		"items": items,
+		"items":   items,
+		"gateway": gateway,
 	})
 }
 

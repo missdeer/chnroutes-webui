@@ -32,9 +32,9 @@
             padding-top: 3%
         }
 
-        input {
+        input, select {
             margin: 1%;
-            width: 70%
+            width: 30%
         }
     </style>
 </head>
@@ -44,8 +44,18 @@
     <p>
     Gateway：
     <input v-model="gateway" required>
-    </p>
+    Platform:
+    <select v-model="platform">
+        <option value="all" selected>ALL</option>
+        <option value="win">Windows</option>
+        <option value="mac">macOS</option>
+        <option value="linux">Linux</option>
+        <option value="android">Android</option>
+        <option value="chinadns">ChinaDNS</option>
+        <option value="ros">RouteOS</option>
+    </select>
     <button v-on:click="generate">生成文件</button>
+    </p>
     <div>        
         <table id="file" align="center">
             <tr>
@@ -63,4 +73,28 @@
 </div>
 </body>
 
+<script src="//cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<script>
+var app = new Vue({
+    el: "#app",
+    data: {
+        platform: "all",
+        gateway: "{{ .gateway }}"
+    },
+	methods:{
+        generate:function(){
+            gw = this.gateway
+            if (gw == "") {
+                gw = "auto"
+            }
+            pf = this.platform
+            if (pf == "all") {
+                window.open( "/" + gw , "_self")
+            } else {
+                window.open( "/" + gw + "/" + this.platform, "_self")
+            }
+        }
+    }
+});
+</script>
 </html>
