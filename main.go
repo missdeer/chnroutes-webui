@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 )
 
@@ -144,6 +146,32 @@ func main() {
 	r.GET("/:gateway/:platform/:file", getFile)
 
 	chnIPs = FetchIps()
-
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	apnic, err := filepath.Abs("apnic.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = watcher.Add(apnic)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					chnIPs = FetchIps()
+				}
+			case err := <-watcher.Errors:
+				if err != nil {
+					log.Println("error:", err)
+				}
+			}
+		}
+	}()
 	r.Run(addr)
 }
