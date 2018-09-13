@@ -12,5 +12,5 @@ ipconfig /flushdns
 
 @echo on
 
-{{range $i, $ip := .Ips}}route add -p {{$ip.Ip}} mask {{$ip.Mask}} %gw% metric 5
+{{range $i, $ip := .Ips}}route add -p {{$ip.IP}} mask {{$ip.Mask}} %gw% metric 5
 {{end}}

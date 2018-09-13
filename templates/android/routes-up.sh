@@ -7,5 +7,5 @@ alias route='/system/xbin/busybox route'
 
 gateway=`netstat -rn | grep ^0\.0\.0\.0 | awk '{print $2}'`
 
-{{range $i, $ip := .Ips}}route add -net {{$ip.Ip}} netmask {{$ip.Mask}} gw $gateway
+{{range $i, $ip := .Ips}}route add -net {{$ip.IP}} netmask {{$ip.Mask}} gw $gateway
 {{end}}

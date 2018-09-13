@@ -5,5 +5,5 @@ gateway=`route -n get default | grep gateway | awk '{print $2}'`
 
 dscacheutil -flushcache
 
-{{range $i, $ip := .Ips}}route add {{$ip.Ip}}/{{$ip.Cidr}} "${gateway}"
+{{range $i, $ip := .Ips}}route add {{$ip.IP}}/{{$ip.Cidr}} "{{$.Gateway}}"
 {{end}}

@@ -1,4 +1,4 @@
 @echo on
 
-{{range $i, $ip := .Ips}}route delete {{$ip.Ip}}
+{{range $i, $ip := .Ips}}route delete {{$ip.IP}}
 {{end}}

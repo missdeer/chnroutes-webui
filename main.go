@@ -1,15 +1,17 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"math"
 	"net/http"
 	"os"
-	"strconv"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+)
+
+var (
+	chnIPs []TheIP
 )
 
 type Item struct {
@@ -30,7 +32,6 @@ func homePage(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("gateway:", gateway, ", platform:", platform)
 	var items []Item
 	switch platform {
 	case "":
@@ -47,6 +48,11 @@ func homePage(c *gin.Context) {
 			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
 			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
 			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/cmroute.dll", FileName: "cmroute.dll"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-up.bat", FileName: "routes-up.bat"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-up.txt", FileName: "routes-up.txt"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-down.bat", FileName: "routes-down.bat"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-down.txt", FileName: "routes-down.txt"},
 			Item{Platform: "Windows", URL: "/" + gateway + "/windows/package.zip", FileName: "package.zip"},
 		}
 	case "routeros":
@@ -71,6 +77,11 @@ func homePage(c *gin.Context) {
 		}
 	case "windows":
 		items = []Item{
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/cmroute.dll", FileName: "cmroute.dll"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-up.bat", FileName: "routes-up.bat"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-up.txt", FileName: "routes-up.txt"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-down.bat", FileName: "routes-down.bat"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-down.txt", FileName: "routes-down.txt"},
 			Item{Platform: "Windows", URL: "/" + gateway + "/windows/package.zip", FileName: "package.zip"},
 		}
 	}
@@ -98,35 +109,25 @@ func getFile(c *gin.Context) {
 		c.String(http.StatusBadRequest, "bad platform request")
 		return
 	}
-
-}
-
-func parseAPNIC() {
-	apnicFile := "apnic.txt"
-	inFile, err := os.Open(apnicFile)
-	if err != nil {
-		fmt.Println("opening apnic.txt failed", err)
+	file := c.Param("file")
+	if file == "" {
+		c.String(http.StatusBadRequest, "bad file request")
+		return
 	}
+	path := fmt.Sprintf("templates/%s/%s", platform, file)
+	ext := strings.ToLower(filepath.Ext(file))
 
-	defer inFile.Close()
-	scanner := bufio.NewScanner(inFile)
-	scanner.Split(bufio.ScanLines)
-
-	var records []string
-	records = append(records, "# skip ip in China")
-	template := "-A SS -d %s/%d -j RETURN"
-	for scanner.Scan() {
-		rec := scanner.Text()
-		s := strings.Split(rec, "|")
-		if len(s) == 7 && s[0] == "apnic" && s[1] == "CN" && s[2] == "ipv4" {
-			v, err := strconv.ParseFloat(s[4], 64)
-			if err != nil {
-				fmt.Printf("converting string %s to float64 failed\n", s[4])
-				continue
-			}
-			mask := 32 - math.Log2(v)
-			records = append(records, fmt.Sprintf(template, s[3], int(mask)))
+	if ext == ".dll" || ext == ".bat" {
+		c.File(path)
+		return
+	}
+	if ext == ".txt" || ext == ".rsc" || ext == ".sh" {
+		if gateway == "auto" {
+			gateway = "$gateway"
 		}
+		data := Generate(path, chnIPs, gateway)
+		c.Data(http.StatusOK, "text/plain", data)
+		return
 	}
 }
 
@@ -141,5 +142,8 @@ func main() {
 	r.GET("/:gateway", homePage)
 	r.GET("/:gateway/:platform", homePage)
 	r.GET("/:gateway/:platform/:file", getFile)
+
+	chnIPs = FetchIps()
+
 	r.Run(addr)
 }

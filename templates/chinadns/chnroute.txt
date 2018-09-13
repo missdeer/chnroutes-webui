@@ -1,2 +1,2 @@
-{{range $i, $ip := .Ips}}{{$ip.Ip}}/{{$ip.Cidr}}
+{{range $i, $ip := .Ips}}{{$ip.IP}}/{{$ip.Cidr}}
 {{end}}
