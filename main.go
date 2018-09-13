@@ -35,71 +35,59 @@ func homePage(c *gin.Context) {
 	switch platform {
 	case "":
 		items = []Item{
-			Item{Platform: "Linux", URL: "/" + gateway + "/linux/up.sh", FileName: "up.sh"},
-			Item{Platform: "Linux", URL: "/" + gateway + "/linux/down.sh", FileName: "down.sh"},
+			Item{Platform: "Linux", URL: "/" + gateway + "/linux/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: "Linux", URL: "/" + gateway + "/linux/routes-down.sh", FileName: "routes-down.sh"},
 			Item{Platform: "Linux", URL: "/" + gateway + "/linux/package.zip", FileName: "package.zip"},
-			Item{Platform: "macOS", URL: "/" + gateway + "/mac/up.sh", FileName: "up.sh"},
-			Item{Platform: "macOS", URL: "/" + gateway + "/mac/down.sh", FileName: "down.sh"},
+			Item{Platform: "Android", URL: "/" + gateway + "/android/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: "Android", URL: "/" + gateway + "/android/routes-down.sh", FileName: "routes-down.sh"},
+			Item{Platform: "Android", URL: "/" + gateway + "/android/package.zip", FileName: "package.zip"},
+			Item{Platform: "macOS", URL: "/" + gateway + "/mac/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: "macOS", URL: "/" + gateway + "/mac/routes-down.sh", FileName: "routes-down.sh"},
 			Item{Platform: "macOS", URL: "/" + gateway + "/mac/package.zip", FileName: "package.zip"},
-			Item{Platform: "Windows", URL: "/" + gateway + "/win/package.zip", FileName: "package.zip"},
+			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
+			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
+			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/package.zip", FileName: "package.zip"},
 		}
-	case "mac", "linux":
+	case "routeros":
+		items = []Item{
+			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
+			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+		}
+	case "chinadns":
+		items = []Item{
+			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
+		}
+	case "mac", "linux", "android":
 		platformMap := map[string]string{
-			"linux":    "Linux",
-			"mac":      "macOS",
-			"win":      "Windows",
-			"android":  "Android",
-			"chinadns": "ChinaDNS",
-			"ros":      "RouterOS",
+			"linux":   "Linux",
+			"mac":     "macOS",
+			"android": "Android",
 		}
 		items = []Item{
-			Item{Platform: platformMap[platform], URL: "/" + gateway + "/" + platform + "/up.sh", FileName: "up.sh"},
-			Item{Platform: platformMap[platform], URL: "/" + gateway + "/" + platform + "/down.sh", FileName: "down.sh"},
+			Item{Platform: platformMap[platform], URL: "/" + gateway + "/" + platform + "/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: platformMap[platform], URL: "/" + gateway + "/" + platform + "/routes-down.sh", FileName: "routes-down.sh"},
 			Item{Platform: platformMap[platform], URL: "/" + gateway + "/" + platform + "/package.zip", FileName: "package.zip"},
 		}
-	case "win":
+	case "windows":
 		items = []Item{
-			Item{Platform: "Windows", URL: "/" + gateway + "/win/package.zip", FileName: "package.zip"},
+			Item{Platform: "Windows", URL: "/" + gateway + "/windows/package.zip", FileName: "package.zip"},
 		}
 	}
 	if gateway == "auto" {
 		gateway = ""
 	}
+	if platform == "" {
+		platform = "all"
+	}
 	c.HTML(http.StatusOK, "index.tpl", gin.H{
-		"items":   items,
-		"gateway": gateway,
+		"items":    items,
+		"gateway":  gateway,
+		"platform": platform,
 	})
 }
 
-func getUpScript(c *gin.Context) {
-	gateway := c.Param("gateway")
-	if gateway == "" {
-		c.String(http.StatusBadRequest, "bad gateway request")
-		return
-	}
-	platform := c.Param("platform")
-	if platform == "" {
-		c.String(http.StatusBadRequest, "bad platform request")
-		return
-	}
-
-}
-
-func getDownScript(c *gin.Context) {
-	gateway := c.Param("gateway")
-	if gateway == "" {
-		c.String(http.StatusBadRequest, "bad gateway request")
-		return
-	}
-	platform := c.Param("platform")
-	if platform == "" {
-		c.String(http.StatusBadRequest, "bad platform request")
-		return
-	}
-
-}
-
-func getPackage(c *gin.Context) {
+func getFile(c *gin.Context) {
 	gateway := c.Param("gateway")
 	if gateway == "" {
 		c.String(http.StatusBadRequest, "bad gateway request")
@@ -152,8 +140,6 @@ func main() {
 	r.GET("/", homePage)
 	r.GET("/:gateway", homePage)
 	r.GET("/:gateway/:platform", homePage)
-	r.GET("/:gateway/:platform/up.sh", getUpScript)
-	r.GET("/:gateway/:platform/down.sh", getDownScript)
-	r.GET("/:gateway/:platform/package.zip", getPackage)
+	r.GET("/:gateway/:platform/:file", getFile)
 	r.Run(addr)
 }

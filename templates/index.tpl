@@ -46,13 +46,13 @@
     <input v-model="gateway" required>
     Platform:
     <select v-model="platform">
-        <option value="all" selected>ALL</option>
-        <option value="win">Windows</option>
+        <option value="all">All</option>
+        <option value="windows">Windows</option>
         <option value="mac">macOS</option>
         <option value="linux">Linux</option>
         <option value="android">Android</option>
         <option value="chinadns">ChinaDNS</option>
-        <option value="ros">RouteOS</option>
+        <option value="routeros">RouterOS</option>
     </select>
     <button v-on:click="generate">生成文件</button>
     </p>
@@ -78,7 +78,7 @@
 var app = new Vue({
     el: "#app",
     data: {
-        platform: "all",
+        platform: "{{ .platform }}",
         gateway: "{{ .gateway }}"
     },
 	methods:{
