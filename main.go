@@ -118,10 +118,10 @@ func getFile(c *gin.Context) {
 		c.String(http.StatusBadRequest, "bad file request")
 		return
 	}
-	path := fmt.Sprintf("templates/%s/%s", platform, file)
 	ext := strings.ToLower(filepath.Ext(file))
 
 	if ext == ".dll" || ext == ".bat" {
+		path := fmt.Sprintf("templates\\%s\\%s", platform, file)
 		c.File(path)
 		return
 	}
@@ -129,6 +129,7 @@ func getFile(c *gin.Context) {
 		if gateway == "auto" {
 			gateway = "$gateway"
 		}
+		path := fmt.Sprintf("templates/%s/%s", platform, file)
 		data := Generate(path, chnIPs, gateway)
 		c.Data(http.StatusOK, "text/plain", data)
 		return

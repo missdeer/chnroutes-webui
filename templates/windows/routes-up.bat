@@ -1,13 +1,13 @@
-@echo off
+ï»¿@echo off
 
 net session >nul 2>&1
 if not %errorlevel% == 0 (
-  echo ÇëÊ¹ÓÃÓÒ¼ü "ÒÑ¹ÜÀíÔ±Éí·İÔËĞĞ" ´Ë½Å±¾
+  echo è¯·ä½¿ç”¨å³é”® "å·²ç®¡ç†å‘˜èº«ä»½è¿è¡Œ" æ­¤è„šæœ¬
   pause
   exit 1
 )
 
 cd /d %~dp0
-echo µ¼ÈëÂ·ÓÉ±í...
-rundll32.exe cmroute.dll,SetRoutes /STATIC_FILE_NAME add.txt /DONT_REQUIRE_URL /IPHLPAPI_ACCESS_DENIED_OK
+echo å¯¼å…¥è·¯ç”±è¡¨...
+rundll32.exe cmroute.dll,SetRoutes /STATIC_FILE_NAME routes-up.txt /DONT_REQUIRE_URL /IPHLPAPI_ACCESS_DENIED_OK
 pause
