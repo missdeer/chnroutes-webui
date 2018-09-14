@@ -42,11 +42,11 @@
 <div id="app">
     <h2>chnroutes WebUI</h2>
     <p>
-    Gateway：
-    <input v-model="gateway" required>
-    Platform:
+    网关：
+    <input v-model="gateway" placeholder="网关IP地址，留空则自动检测默认网关">
+    系统/平台：
     <select v-model="platform">
-        <option value="all">All</option>
+        <option value="all">全部</option>
         <option value="windows">Windows</option>
         <option value="mac">macOS</option>
         <option value="linux">Linux</option>
