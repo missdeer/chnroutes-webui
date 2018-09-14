@@ -121,11 +121,12 @@ func getFile(c *gin.Context) {
 
 	path := filepath.Join("templates", platform, file)
 	ext := strings.ToLower(filepath.Ext(file))
-	if ext == ".dll" || ext == ".bat" {
+	if ext == ".dll" {
 		c.File(path)
 		return
 	}
-	if ext == ".txt" || ext == ".rsc" || ext == ".sh" {
+
+	if ext == ".txt" || ext == ".rsc" || ext == ".sh" || ext == ".bat" {
 		if gateway == "auto" {
 			gateway = "$gateway"
 		}
@@ -214,12 +215,14 @@ func packRouterOS(gateway string) []byte {
 	}
 	return pack(items)
 }
+
 func packChinaDNS(gateway string) []byte {
 	items := []ZipItem{
 		{Name: "chnroute.txt", RawContent: Generate(filepath.Join("templates", "chinadns", "chnroute.txt"), chnIPs, gateway)},
 	}
 	return pack(items)
 }
+
 func packAndroid(gateway string) []byte {
 	items := []ZipItem{
 		{Name: "routes-up.sh", RawContent: Generate(filepath.Join("templates", "android", "routes-up.sh"), chnIPs, gateway)},
@@ -227,6 +230,7 @@ func packAndroid(gateway string) []byte {
 	}
 	return pack(items)
 }
+
 func packLinux(gateway string) []byte {
 	items := []ZipItem{
 		{Name: "routes-up.sh", RawContent: Generate(filepath.Join("templates", "linux", "routes-up.sh"), chnIPs, gateway)},
@@ -234,6 +238,7 @@ func packLinux(gateway string) []byte {
 	}
 	return pack(items)
 }
+
 func packMac(gateway string) []byte {
 	items := []ZipItem{
 		{Name: "routes-up.sh", RawContent: Generate(filepath.Join("templates", "mac", "routes-up.sh"), chnIPs, gateway)},
@@ -241,10 +246,11 @@ func packMac(gateway string) []byte {
 	}
 	return pack(items)
 }
+
 func packWin(gateway string) []byte {
 	items := []ZipItem{
 		{Name: "cmroute.dll", RawContent: nil, FilePath: filepath.Join("templates", "windows", "cmroute.dll")},
-		{Name: "routes-up.bat", RawContent: nil, FilePath: filepath.Join("templates", "windows", "routes-up.bat")},
+		{Name: "routes-up.bat", RawContent: Generate(filepath.Join("templates", "windows", "routes-up.bat"), chnIPs, gateway)},
 		{Name: "routes-down.bat", RawContent: nil, FilePath: filepath.Join("templates", "windows", "routes-down.bat")},
 		{Name: "routes-up.txt", RawContent: Generate(filepath.Join("templates", "windows", "routes-up.txt"), chnIPs, gateway)},
 		{Name: "routes-down.txt", RawContent: Generate(filepath.Join("templates", "windows", "routes-down.txt"), chnIPs, gateway)},
