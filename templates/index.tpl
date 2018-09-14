@@ -89,9 +89,9 @@ var app = new Vue({
             }
             pf = this.platform
             if (pf == "all") {
-                window.open( "/" + gw , "_self")
+                window.open( "/l/" + gw , "_self")
             } else {
-                window.open( "/" + gw + "/" + this.platform, "_self")
+                window.open( "/l/" + gw + "/" + this.platform, "_self")
             }
         }
     }
