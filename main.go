@@ -3,7 +3,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -50,8 +50,10 @@ func homePage(c *gin.Context) {
 			Item{Platform: "macOS", URL: "/" + gateway + "/mac/routes-down.sh", FileName: "routes-down.sh"},
 			Item{Platform: "macOS", URL: "/" + gateway + "/mac/package.zip", FileName: "package.zip"},
 			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
+			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/package.zip", FileName: "package.zip"},
 			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
 			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/package.zip", FileName: "package.zip"},
 			Item{Platform: "Windows", URL: "/" + gateway + "/windows/cmroute.dll", FileName: "cmroute.dll"},
 			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-up.bat", FileName: "routes-up.bat"},
 			Item{Platform: "Windows", URL: "/" + gateway + "/windows/routes-up.txt", FileName: "routes-up.txt"},
@@ -63,10 +65,12 @@ func homePage(c *gin.Context) {
 		items = []Item{
 			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
 			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+			Item{Platform: "RouterOS", URL: "/" + gateway + "/routeros/package.zip", FileName: "package.zip"},
 		}
 	case "chinadns":
 		items = []Item{
 			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
+			Item{Platform: "ChinaDNS", URL: "/" + gateway + "/chinadns/package.zip", FileName: "package.zip"},
 		}
 	case "mac", "linux", "android":
 		platformMap := map[string]string{
@@ -118,10 +122,10 @@ func getFile(c *gin.Context) {
 		c.String(http.StatusBadRequest, "bad file request")
 		return
 	}
-	ext := strings.ToLower(filepath.Ext(file))
 
+	path := filepath.Join("templates", platform, file)
+	ext := strings.ToLower(filepath.Ext(file))
 	if ext == ".dll" || ext == ".bat" {
-		path := fmt.Sprintf("templates\\%s\\%s", platform, file)
 		c.File(path)
 		return
 	}
@@ -129,7 +133,6 @@ func getFile(c *gin.Context) {
 		if gateway == "auto" {
 			gateway = "$gateway"
 		}
-		path := fmt.Sprintf("templates/%s/%s", platform, file)
 		data := Generate(path, chnIPs, gateway)
 		c.Data(http.StatusOK, "text/plain", data)
 		return
@@ -139,6 +142,16 @@ func getFile(c *gin.Context) {
 		switch platform {
 		case "windows":
 			data = packWin(gateway)
+		case "android":
+			data = packAndroid(gateway)
+		case "linux":
+			data = packLinux(gateway)
+		case "mac":
+			data = packMac(gateway)
+		case "chinadns":
+			data = packChinaDNS(gateway)
+		case "routeros":
+			data = packRouterOS(gateway)
 		}
 
 		c.Data(http.StatusOK, "application/application/x-zip-compressed", data)
@@ -146,7 +159,14 @@ func getFile(c *gin.Context) {
 	}
 }
 
-func packWin(gateway string) []byte {
+// ZipItem represent an item of zip package
+type ZipItem struct {
+	Name       string
+	RawContent []byte
+	FilePath   string
+}
+
+func pack(items []ZipItem) []byte {
 	// Create a buffer to write our archive to.
 	buf := new(bytes.Buffer)
 
@@ -154,21 +174,32 @@ func packWin(gateway string) []byte {
 	w := zip.NewWriter(buf)
 
 	// Add some files to the archive.
-	var files = []struct {
-		Name, Body string
-	}{
-		{"readme.txt", "This archive contains some text files."},
-		{"gopher.txt", "Gopher names:\nGeorge\nGeoffrey\nGonzo"},
-		{"todo.txt", "Get animal handling licence.\nWrite more examples."},
-	}
-	for _, file := range files {
+	for _, file := range items {
 		f, err := w.Create(file.Name)
 		if err != nil {
 			log.Fatal(err)
 		}
-		_, err = f.Write([]byte(file.Body))
-		if err != nil {
-			log.Fatal(err)
+		if file.RawContent != nil {
+			_, err = f.Write(file.RawContent)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		if file.FilePath != "" {
+			fd, err := os.Open(file.FilePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			b, err := ioutil.ReadAll(fd)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fd.Close()
+
+			_, err = f.Write(b)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
@@ -178,6 +209,51 @@ func packWin(gateway string) []byte {
 		log.Fatal(err)
 	}
 	return buf.Bytes()
+}
+
+func packRouterOS(gateway string) []byte {
+	items := []ZipItem{
+		{Name: "routeros-address-list.rsc", RawContent: Generate(filepath.Join("templates", "routeros", "routeros-address-list.rsc"), chnIPs, gateway)},
+		{Name: "routeros.rsc", RawContent: Generate(filepath.Join("templates", "routeros", "routeros.rsc"), chnIPs, gateway)},
+	}
+	return pack(items)
+}
+func packChinaDNS(gateway string) []byte {
+	items := []ZipItem{
+		{Name: "chnroute.txt", RawContent: Generate(filepath.Join("templates", "chinadns", "chnroute.txt"), chnIPs, gateway)},
+	}
+	return pack(items)
+}
+func packAndroid(gateway string) []byte {
+	items := []ZipItem{
+		{Name: "routes-up.sh", RawContent: Generate(filepath.Join("templates", "android", "routes-up.sh"), chnIPs, gateway)},
+		{Name: "routes-down.sh", RawContent: Generate(filepath.Join("templates", "android", "routes-down.sh"), chnIPs, gateway)},
+	}
+	return pack(items)
+}
+func packLinux(gateway string) []byte {
+	items := []ZipItem{
+		{Name: "routes-up.sh", RawContent: Generate(filepath.Join("templates", "linux", "routes-up.sh"), chnIPs, gateway)},
+		{Name: "routes-down.sh", RawContent: Generate(filepath.Join("templates", "linux", "routes-down.sh"), chnIPs, gateway)},
+	}
+	return pack(items)
+}
+func packMac(gateway string) []byte {
+	items := []ZipItem{
+		{Name: "routes-up.sh", RawContent: Generate(filepath.Join("templates", "mac", "routes-up.sh"), chnIPs, gateway)},
+		{Name: "routes-down.sh", RawContent: Generate(filepath.Join("templates", "mac", "routes-down.sh"), chnIPs, gateway)},
+	}
+	return pack(items)
+}
+func packWin(gateway string) []byte {
+	items := []ZipItem{
+		{Name: "cmroute.dll", RawContent: nil, FilePath: filepath.Join("templates", "windows", "cmroute.dll")},
+		{Name: "routes-up.bat", RawContent: nil, FilePath: filepath.Join("templates", "windows", "routes-up.bat")},
+		{Name: "routes-down.bat", RawContent: nil, FilePath: filepath.Join("templates", "windows", "routes-down.bat")},
+		{Name: "routes-up.txt", RawContent: Generate(filepath.Join("templates", "windows", "routes-up.txt"), chnIPs, gateway)},
+		{Name: "routes-down.txt", RawContent: Generate(filepath.Join("templates", "windows", "routes-down.txt"), chnIPs, gateway)},
+	}
+	return pack(items)
 }
 
 func main() {
