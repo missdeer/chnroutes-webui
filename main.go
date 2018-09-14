@@ -34,7 +34,7 @@ func homePage(c *gin.Context) {
 
 	var items []Item
 	switch platform {
-	case "":
+	default:
 		items = []Item{
 			Item{Platform: "Linux", URL: "/f/" + gateway + "/linux/routes-up.sh", FileName: "routes-up.sh"},
 			Item{Platform: "Linux", URL: "/f/" + gateway + "/linux/routes-down.sh", FileName: "routes-down.sh"},
@@ -57,6 +57,7 @@ func homePage(c *gin.Context) {
 			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-down.txt", FileName: "routes-down.txt"},
 			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/package.zip", FileName: "package.zip"},
 		}
+		platform = "all"
 	case "routeros":
 		items = []Item{
 			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
@@ -91,9 +92,6 @@ func homePage(c *gin.Context) {
 	}
 	if gateway == "auto" {
 		gateway = ""
-	}
-	if platform == "" {
-		platform = "all"
 	}
 	c.HTML(http.StatusOK, "index.tpl", gin.H{
 		"items":    items,
