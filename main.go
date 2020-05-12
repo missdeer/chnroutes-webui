@@ -279,11 +279,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	apnic, err := filepath.Abs("apnic.txt")
+	chinaIPList, err := filepath.Abs("china_ip_list.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = watcher.Add(apnic)
+	err = watcher.Add(chinaIPList)
 	if err != nil {
 		log.Fatal(err)
 	}

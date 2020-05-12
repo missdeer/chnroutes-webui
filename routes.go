@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"net"
 	"os"
@@ -55,30 +55,31 @@ func FetchIps() (ips []TheIP) {
 
 // FetchRemoteIps parse APNIC records
 func FetchRemoteIps() (ips []TheIP) {
-	apnicFile := "apnic.txt"
-	inFile, err := os.Open(apnicFile)
+	chinaIPListFile := "china_ip_list.txt"
+	inFile, err := os.Open(chinaIPListFile)
 	if err != nil {
-		fmt.Println("opening apnic.txt failed", err)
+		fmt.Println("opening china_ip_list.txt failed", err)
 		return
 	}
 
 	defer inFile.Close()
-	body, err := ioutil.ReadAll(inFile)
-	if err != nil {
-		fmt.Println("reading apnic.txt failed", err)
-		return
-	}
 
-	re, _ := regexp.Compile(`apnic\|CN\|ipv4\|([\d\.]+)\|(\d+)\|`)
-	rows := re.FindAllSubmatch(body, -1)
-	for i := 0; i < len(rows); i++ {
-		row := rows[i]
-		ip := string(row[1])
-		numIP, _ := strconv.Atoi(string(row[2]))
-		cidr := 32 - int(math.Log2(float64(numIP)))
-		cidrStr := strconv.Itoa(cidr)
+	re, _ := regexp.Compile(`^([\d\.]+)/(\d{1,2})$`)
+	scanner := bufio.NewScanner(inFile)
+	scanner.Split(bufio.ScanLines)
 
-		ips = append(ips, TheIP{ip, cidrStr, cidr2mask(cidr)})
+	for scanner.Scan() {
+		line := scanner.Text()
+		if re.MatchString(line) {
+			ss := strings.Split(line, "/")
+
+			ip := ss[0]
+			numIP, _ := strconv.Atoi(string(ss[1]))
+			cidr := 32 - int(math.Log2(float64(numIP)))
+			cidrStr := strconv.Itoa(cidr)
+
+			ips = append(ips, TheIP{ip, cidrStr, cidr2mask(cidr)})
+		}
 	}
 
 	return ips
