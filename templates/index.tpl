@@ -43,8 +43,14 @@
     <h2>chnroutes WebUI</h2>
     <p>
     网关：
-    <input v-model="gateway" placeholder="网关IP地址，留空则自动检测默认网关">
-    系统/平台：
+    <input v-model="gateway" placeholder="网关IP地址，留空则自动检测默认网关"><br>
+    数据：
+    <select v-model="datasource">
+        <option value="chinaiplist" selected>https://github.com/17mon/china_ip_list</option>
+        <option value="maxmind">https://dev.maxmind.com/geoip/geoip2/geolite2/</option>
+        <option value="apnic">http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest</option>
+    </select><br>
+    平台：
     <select v-model="platform">
         <option value="all">全部</option>
         <option value="windows">Windows</option>
@@ -54,6 +60,7 @@
         <option value="chinadns">ChinaDNS</option>
         <option value="routeros">RouterOS</option>
     </select>
+    </p><p>
     <button v-on:click="generate">生成文件</button>
     </p>
     <div>        
@@ -73,13 +80,14 @@
 </div>
 </body>
 
-<script src="//cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<script src="//cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
 <script>
 var app = new Vue({
     el: "#app",
     data: {
         platform: "{{ .platform }}",
-        gateway: "{{ .gateway }}"
+        gateway: "{{ .gateway }}",
+        datasource: "{{ .datasource }}",
     },
 	methods:{
         generate:function(){
@@ -89,9 +97,9 @@ var app = new Vue({
             }
             pf = this.platform
             if (pf == "all") {
-                window.open( "/l/" + gw , "_self")
+                window.open( "/l/" + gw + "/" + this.datasource, "_self")
             } else {
-                window.open( "/l/" + gw + "/" + this.platform, "_self")
+                window.open( "/l/" + gw + "/" + this.datasource + "/" + this.platform, "_self")
             }
         }
     }

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
@@ -31,43 +30,45 @@ func homePage(c *gin.Context) {
 		gateway = "auto"
 	}
 	platform := c.Param("platform")
+	datasource := c.Param("datasource")
 
 	var items []Item
 	switch platform {
 	default:
 		items = []Item{
-			Item{Platform: "Linux", URL: "/f/" + gateway + "/linux/routes-up.sh", FileName: "routes-up.sh"},
-			Item{Platform: "Linux", URL: "/f/" + gateway + "/linux/routes-down.sh", FileName: "routes-down.sh"},
-			Item{Platform: "Linux", URL: "/f/" + gateway + "/linux/package.zip", FileName: "package.zip"},
-			Item{Platform: "Android", URL: "/f/" + gateway + "/android/routes-up.sh", FileName: "routes-up.sh"},
-			Item{Platform: "Android", URL: "/f/" + gateway + "/android/routes-down.sh", FileName: "routes-down.sh"},
-			Item{Platform: "Android", URL: "/f/" + gateway + "/android/package.zip", FileName: "package.zip"},
-			Item{Platform: "macOS", URL: "/f/" + gateway + "/mac/routes-up.sh", FileName: "routes-up.sh"},
-			Item{Platform: "macOS", URL: "/f/" + gateway + "/mac/routes-down.sh", FileName: "routes-down.sh"},
-			Item{Platform: "macOS", URL: "/f/" + gateway + "/mac/package.zip", FileName: "package.zip"},
-			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
-			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/chinadns/package.zip", FileName: "package.zip"},
-			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
-			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
-			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/package.zip", FileName: "package.zip"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/cmroute.dll", FileName: "cmroute.dll"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-up.bat", FileName: "routes-up.bat"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-up.txt", FileName: "routes-up.txt"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-down.bat", FileName: "routes-down.bat"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-down.txt", FileName: "routes-down.txt"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/package.zip", FileName: "package.zip"},
+			Item{Platform: "Linux", URL: "/f/" + gateway + "/" + datasource + "/linux/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: "Linux", URL: "/f/" + gateway + "/" + datasource + "/linux/routes-down.sh", FileName: "routes-down.sh"},
+			Item{Platform: "Linux", URL: "/f/" + gateway + "/" + datasource + "/linux/package.zip", FileName: "package.zip"},
+			Item{Platform: "Android", URL: "/f/" + gateway + "/" + datasource + "/android/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: "Android", URL: "/f/" + gateway + "/" + datasource + "/android/routes-down.sh", FileName: "routes-down.sh"},
+			Item{Platform: "Android", URL: "/f/" + gateway + "/" + datasource + "/android/package.zip", FileName: "package.zip"},
+			Item{Platform: "macOS", URL: "/f/" + gateway + "/" + datasource + "/mac/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: "macOS", URL: "/f/" + gateway + "/" + datasource + "/mac/routes-down.sh", FileName: "routes-down.sh"},
+			Item{Platform: "macOS", URL: "/f/" + gateway + "/" + datasource + "/mac/package.zip", FileName: "package.zip"},
+			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/" + datasource + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
+			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/" + datasource + "/chinadns/package.zip", FileName: "package.zip"},
+			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/" + datasource + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
+			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/" + datasource + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/" + datasource + "/routeros/package.zip", FileName: "package.zip"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/cmroute.dll", FileName: "cmroute.dll"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-up.bat", FileName: "routes-up.bat"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-up.txt", FileName: "routes-up.txt"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-down.bat", FileName: "routes-down.bat"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-down.txt", FileName: "routes-down.txt"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/package.zip", FileName: "package.zip"},
 		}
 		platform = "all"
+		datasource = "chinaiplist"
 	case "routeros":
 		items = []Item{
-			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
-			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
-			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/routeros/package.zip", FileName: "package.zip"},
+			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/" + datasource + "/routeros/routeros-address-list.rsc", FileName: "routeros-address-list.rsc"},
+			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/" + datasource + "/routeros/routeros.rsc", FileName: "routeros.rsc"},
+			Item{Platform: "RouterOS", URL: "/f/" + gateway + "/" + datasource + "/routeros/package.zip", FileName: "package.zip"},
 		}
 	case "chinadns":
 		items = []Item{
-			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
-			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/chinadns/package.zip", FileName: "package.zip"},
+			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/" + datasource + "/chinadns/chnroute.txt", FileName: "chnroute.txt"},
+			Item{Platform: "ChinaDNS", URL: "/f/" + gateway + "/" + datasource + "/chinadns/package.zip", FileName: "package.zip"},
 		}
 	case "mac", "linux", "android":
 		platformMap := map[string]string{
@@ -76,27 +77,28 @@ func homePage(c *gin.Context) {
 			"android": "Android",
 		}
 		items = []Item{
-			Item{Platform: platformMap[platform], URL: "/f/" + gateway + "/" + platform + "/routes-up.sh", FileName: "routes-up.sh"},
-			Item{Platform: platformMap[platform], URL: "/f/" + gateway + "/" + platform + "/routes-down.sh", FileName: "routes-down.sh"},
-			Item{Platform: platformMap[platform], URL: "/f/" + gateway + "/" + platform + "/package.zip", FileName: "package.zip"},
+			Item{Platform: platformMap[platform], URL: "/f/" + gateway + "/" + datasource + "/" + platform + "/routes-up.sh", FileName: "routes-up.sh"},
+			Item{Platform: platformMap[platform], URL: "/f/" + gateway + "/" + datasource + "/" + platform + "/routes-down.sh", FileName: "routes-down.sh"},
+			Item{Platform: platformMap[platform], URL: "/f/" + gateway + "/" + datasource + "/" + platform + "/package.zip", FileName: "package.zip"},
 		}
 	case "windows":
 		items = []Item{
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/cmroute.dll", FileName: "cmroute.dll"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-up.bat", FileName: "routes-up.bat"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-up.txt", FileName: "routes-up.txt"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-down.bat", FileName: "routes-down.bat"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/routes-down.txt", FileName: "routes-down.txt"},
-			Item{Platform: "Windows", URL: "/f/" + gateway + "/windows/package.zip", FileName: "package.zip"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/cmroute.dll", FileName: "cmroute.dll"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-up.bat", FileName: "routes-up.bat"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-up.txt", FileName: "routes-up.txt"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-down.bat", FileName: "routes-down.bat"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/routes-down.txt", FileName: "routes-down.txt"},
+			Item{Platform: "Windows", URL: "/f/" + gateway + "/" + datasource + "/windows/package.zip", FileName: "package.zip"},
 		}
 	}
 	if gateway == "auto" {
 		gateway = ""
 	}
 	c.HTML(http.StatusOK, "index.tpl", gin.H{
-		"items":    items,
-		"gateway":  gateway,
-		"platform": platform,
+		"items":      items,
+		"gateway":    gateway,
+		"platform":   platform,
+		"datasource": datasource,
 	})
 }
 
@@ -109,6 +111,11 @@ func getFile(c *gin.Context) {
 	platform := c.Param("platform")
 	if platform == "" {
 		c.String(http.StatusBadRequest, "bad platform request")
+		return
+	}
+	datasource := c.Param("datasource")
+	if datasource == "" {
+		c.String(http.StatusBadRequest, "bad data source request")
 		return
 	}
 	file := c.Param("file")
@@ -262,17 +269,12 @@ func main() {
 		addr = bind
 	}
 
-	httpsEnabled := false
-	if https, ok := os.LookupEnv("HTTPS_ENABLED"); ok {
-		httpsEnabled, _ = strconv.ParseBool(https)
-	}
-
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*.tpl")
 	r.GET("/", homePage)
-	r.GET("/l/:gateway", homePage)
-	r.GET("/l/:gateway/:platform", homePage)
-	r.GET("/f/:gateway/:platform/:file", getFile)
+	r.GET("/l/:gateway/:datasource", homePage)
+	r.GET("/l/:gateway/:datasource/:platform", homePage)
+	r.GET("/f/:gateway/:datasource/:platform/:file", getFile)
 
 	chnIPs = FetchIps()
 	watcher, err := fsnotify.NewWatcher()
@@ -302,18 +304,5 @@ func main() {
 			}
 		}
 	}()
-
-	if httpsEnabled {
-		var certFile, keyFile string
-		if cert, ok := os.LookupEnv("HTTPS_CERT"); ok {
-			certFile = cert
-		}
-		if key, ok := os.LookupEnv("HTTPS_KEY"); ok {
-			keyFile = key
-		}
-		if certFile != "" && keyFile != "" {
-			log.Fatal(r.RunTLS(addr, certFile, keyFile))
-		}
-	}
 	log.Fatal(r.Run(addr))
 }
