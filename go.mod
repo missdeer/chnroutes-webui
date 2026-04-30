@@ -3,7 +3,7 @@ module github.com/missdeer/chnroutes-webui
 go 1.25.0
 
 require (
-	github.com/fsnotify/fsnotify v1.8.0
+	github.com/fsnotify/fsnotify v1.10.0
 	github.com/gin-gonic/gin v1.12.0
 )
 
